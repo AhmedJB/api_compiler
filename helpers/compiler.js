@@ -661,6 +661,48 @@ contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable, Ownab
     ${methods}
 }`
 
+// roles
+
+var roles_code = `
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.2;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+${imports}
+
+contract ${data.name} is ERC721 {
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+
+    constructor() ERC721("${data.name}", "${data.symbol}"){
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(PAUSER_ROLE, msg.sender);
+        _setupRole(MINTER_ROLE, msg.sender);
+    }
+
+    function _baseURI() internal pure override returns (string memory) {
+        return "gggggg";
+    }
+
+    function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+        _safeMint(to, tokenId);
+    }
+
+    ${methods}
+
+    // The following functions are overrides required by Solidity.
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, AccessControl)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+}
+
 
     if (data.ownable){
         if (data.transparent){
