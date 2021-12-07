@@ -195,23 +195,153 @@ var construct = ``
                 imports += 'import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";\n'
                 clss  += ', OwnableUpgradeable';
                 construct += '__Ownable_init();\n'
-                methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
+                if (!data.storage){
+                    methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
+                        _safeMint(to, tokenId);
+                    }\n`;
+                }else{
+                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                    public
+                    onlyOwner
+                {
                     _safeMint(to, tokenId);
-                }`;
+                    _setTokenURI(tokenId, uri);
+                }\n`
+                }
+                
             }else if (data.uups){
-                methods +=  `function safeMint(address to, uint256 tokenId) public onlyOwner {
+                if (!data.storage){
+                    methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
+                        _safeMint(to, tokenId);
+                    }\n`;
+                }else{
+                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                    public
+                    onlyOwner
+                {
                     _safeMint(to, tokenId);
-                }\n`;
+                    _setTokenURI(tokenId, uri);
+                }\n`
+                }
 
     
             }else{
                 imports += 'import "@openzeppelin/contracts/access/Ownable.sol";\n';
                 clss += ', Ownable'
-        methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
-            _safeMint(to, tokenId);
-        }\n`
+                if (!data.storage){
+                    methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
+                        _safeMint(to, tokenId);
+                    }\n`;
+                }else{
+                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                    public
+                    onlyOwner
+                {
+                    _safeMint(to, tokenId);
+                    _setTokenURI(tokenId, uri);
+                }\n`
+                }
         
     
+            }
+        }else if (data.roles){
+            if (data.transparent){
+                imports += 'import "@openzeppelin/contracts/access/AccessControl.sol";\n'
+                clss += ', AccessControlUpgradeable';
+                construct += '__AccessControl_init();\n';
+                if (!data.storage){
+                    methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+                        _safeMint(to, tokenId);
+                    }\n`;
+                }else{
+                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                    public
+                    onlyRole(MINTER_ROLE)
+                {
+                    _safeMint(to, tokenId);
+                    _setTokenURI(tokenId, uri);
+                }\n`
+                }
+                if (!(data.enumerable || data.pausable)){
+                    
+                    methods += `
+                
+                    // The following functions are overrides required by Solidity.
+                
+                    function supportsInterface(bytes4 interfaceId)
+                        public
+                        view
+                        override(ERC721Upgradeable, AccessControlUpgradeable)
+                        returns (bool)
+                    {
+                        return super.supportsInterface(interfaceId);
+                    }\n`
+                } 
+
+            }else if (data.uups){
+                if (!data.storage){
+                    methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+                        _safeMint(to, tokenId);
+                    }\n`;
+                }else{
+                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                    public
+                    onlyRole(MINTER_ROLE)
+                {
+                    _safeMint(to, tokenId);
+                    _setTokenURI(tokenId, uri);
+                }\n`
+                }
+                if (!(data.enumerable || data.pausable)){
+                    
+                    methods += `
+                
+                    // The following functions are overrides required by Solidity.
+                
+                    function supportsInterface(bytes4 interfaceId)
+                        public
+                        view
+                        override(ERC721Upgradeable, AccessControlUpgradeable)
+                        returns (bool)
+                    {
+                        return super.supportsInterface(interfaceId);
+                    }\n`
+                } 
+
+            }else{
+                imports += 'import "@openzeppelin/contracts/access/AccessControl.sol";\n'
+                clss += ', AccessControl';
+
+                if (!data.storage){
+                    methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+                        _safeMint(to, tokenId);
+                    }\n`;
+                }else{
+                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                    public
+                    onlyRole(MINTER_ROLE)
+                {
+                    _safeMint(to, tokenId);
+                    _setTokenURI(tokenId, uri);
+                }\n`
+                }
+                
+                if (!(data.enumerable || data.pausable)){
+                    methods += `
+                
+                    // The following functions are overrides required by Solidity.
+                
+                    function supportsInterface(bytes4 interfaceId)
+                        public
+                        view
+                        override(ERC721, AccessControl)
+                        returns (bool)
+                    {
+                        return super.supportsInterface(interfaceId);
+                    }\n`
+                } 
+                
+
             }
         }
         
@@ -236,6 +366,24 @@ var construct = ``
                 clss += ', ERC721Burnable'
         imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";\n`
     
+            }
+        }else if (data.roles){
+            if (data.transparent){
+                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";\n';
+                clss += ', ERC721BurnableUpgradeable'
+                construct += '__ERC721Burnable_init();\n'
+
+            }else if (data.uups){
+
+                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";\n';
+                clss += ', ERC721BurnableUpgradeable'
+                construct += '__ERC721Burnable_init();\n'
+
+            }else{
+                imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";\n`;
+                clss += `, ERC721Burnable`
+                
+                
             }
         }
         
@@ -389,6 +537,140 @@ var construct = ``
         
     
             }
+        }else if (data.roles){
+            if (data.transparent){
+                methods += `function pause() public onlyRole(PAUSER_ROLE) {
+                    _pause();
+                }
+            
+                function unpause() public onlyRole(PAUSER_ROLE) {
+                    _unpause();
+                }
+                \n
+                `
+                if (data.mintable){
+                    imports += 'import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";\n'
+                    clss +=  ', PausableUpgradeable';
+                    construct += '__Pausable_init();\n'
+
+                    
+                    
+
+                }else{
+                    construct += `__Pausable_init();
+                    __AccessControl_init();\n`
+                    imports += `import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+                    import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"\n`;
+                    clss += ', PausableUpgradeable, AccessControlUpgradeable';
+                    if (!data.enumerable){
+                        methods += `
+
+                        function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+                        internal
+                        whenNotPaused
+                        override
+                    {
+                        super._beforeTokenTransfer(from, to, tokenId);
+                    }
+                
+                    // The following functions are overrides required by Solidity.
+                
+                    function supportsInterface(bytes4 interfaceId)
+                        public
+                        view
+                        override(ERC721Upgradeable, AccessControlUpgradeable)
+                        returns (bool)
+                    {
+                        return super.supportsInterface(interfaceId);
+                    }
+                }
+        \n`}}
+
+                    
+
+            }else if (data.uups){
+                imports += 'import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";\n'
+                    clss +=  ', PausableUpgradeable';
+                    construct += '__Pausable_init();\n'
+
+                methods += `function pause() public onlyRole(PAUSER_ROLE) {
+                    _pause();
+                }
+            
+                function unpause() public onlyRole(PAUSER_ROLE) {
+                    _unpause();
+                }
+                \n
+                `
+                if (!data.enumerable){
+                    methods += `
+
+                    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+                    internal
+                    whenNotPaused
+                    override
+                {
+                    super._beforeTokenTransfer(from, to, tokenId);
+                }
+            
+                // The following functions are overrides required by Solidity.
+            
+                function supportsInterface(bytes4 interfaceId)
+                    public
+                    view
+                    override(ERC721Upgradeable, AccessControlUpgradeable)
+                    returns (bool)
+                {
+                    return super.supportsInterface(interfaceId);
+                }
+            }
+    \n`}
+
+            }else{
+                methods += `function pause() public onlyRole(PAUSER_ROLE) {
+                    _pause();
+                }
+            
+                function unpause() public onlyRole(PAUSER_ROLE) {
+                    _unpause();
+                }
+                \n
+                `
+                if (data.mintable){
+                    imports += 'import "@openzeppelin/contracts/security/Pausable.sol";'
+                    clss +=  ', Pausable';
+                    
+                    
+
+                }else{
+                    imports += `import "@openzeppelin/contracts/security/Pausable.sol";
+                        import "@openzeppelin/contracts/access/AccessControl.sol";\n`;
+                    clss += ', Pausable, AccessControl';
+                    if (!data.enumerable){
+                        methods += `
+
+                        function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+    internal
+    whenNotPaused
+    override
+{
+    super._beforeTokenTransfer(from, to, tokenId);
+}
+        function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC721, AccessControl)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+        \n`
+
+                    }
+                    
+
+                }
+            }
         }
         
     }
@@ -518,6 +800,137 @@ var construct = ``
                 }
     
             }
+        }else if (data.roles){
+            if (data.transparent){
+
+                clss += `, ERC721EnumerableUpgradeable`;
+                imports += `import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";\n`
+                construct += '__ERC721Enumerable_init();\n';
+
+                if (data.pausable || data.mintable){
+                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+                    internal
+                    whenNotPaused
+                    override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+                {
+                    super._beforeTokenTransfer(from, to, tokenId);
+                }
+            
+                // The following functions are overrides required by Solidity.
+            
+                function supportsInterface(bytes4 interfaceId)
+                    public
+                    view
+                    override(ERC721Upgradeable, ERC721EnumerableUpgradeable, AccessControlUpgradeable)
+                    returns (bool)
+                {
+                    return super.supportsInterface(interfaceId);
+                }\n`;
+                    
+                }else{
+                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+                    internal
+                    override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+                {
+                    super._beforeTokenTransfer(from, to, tokenId);
+                }
+            
+                function supportsInterface(bytes4 interfaceId)
+                    public
+                    view
+                    override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+                    returns (bool)
+                {
+                    return super.supportsInterface(interfaceId);
+                }\n`;
+                }
+
+            }else if (data.uups){
+                clss += `, ERC721EnumerableUpgradeable`;
+                imports += `import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";\n`
+                construct += '__ERC721Enumerable_init();\n';
+
+                if (data.pausable || data.mintable){
+                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+                    internal
+                    whenNotPaused
+                    override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+                {
+                    super._beforeTokenTransfer(from, to, tokenId);
+                }
+            
+                // The following functions are overrides required by Solidity.
+            
+                function supportsInterface(bytes4 interfaceId)
+                    public
+                    view
+                    override(ERC721Upgradeable, ERC721EnumerableUpgradeable, AccessControlUpgradeable)
+                    returns (bool)
+                {
+                    return super.supportsInterface(interfaceId);
+                }\n`;
+                    
+                }else{
+                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+                    internal
+                    override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+                {
+                    super._beforeTokenTransfer(from, to, tokenId);
+                }
+            
+                function supportsInterface(bytes4 interfaceId)
+                    public
+                    view
+                    override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
+                    returns (bool)
+                {
+                    return super.supportsInterface(interfaceId);
+                }\n`;
+                }
+
+            }else{
+                clss += `, ERC721Enumerable`;
+                imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";\n`
+
+                if (data.pausable || data.mintable){
+                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+                    internal
+                    whenNotPaused
+                    override(ERC721, ERC721Enumerable)
+                {
+                    super._beforeTokenTransfer(from, to, tokenId);
+                }
+            
+                // The following functions are overrides required by Solidity.
+            
+                function supportsInterface(bytes4 interfaceId)
+                    public
+                    view
+                    override(ERC721, ERC721Enumerable, AccessControl)
+                    returns (bool)
+                {
+                    return super.supportsInterface(interfaceId);
+                }\n`;
+                    
+                }else{
+                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+                    internal
+                    override(ERC721, ERC721Enumerable)
+                {
+                    super._beforeTokenTransfer(from, to, tokenId);
+                }
+            
+                function supportsInterface(bytes4 interfaceId)
+                    public
+                    view
+                    override(ERC721, ERC721Enumerable)
+                    returns (bool)
+                {
+                    return super.supportsInterface(interfaceId);
+                }\n`;
+                }
+                
+            }
         }
         
     }
@@ -578,6 +991,63 @@ var construct = ``
         }\n`
         imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";\n`
     
+            }
+        }else if (data.roles){
+            if (data.transparent){
+                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";\n';
+                clss += ', ERC721URIStorageUpgradeable'
+                construct += '__ERC721URIStorage_init();';
+                methods += `function _burn(uint256 tokenId)
+                internal
+                override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
+            {
+                super._burn(tokenId);
+            }
+        
+            function tokenURI(uint256 tokenId)
+                public
+                view
+                override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
+                returns (string memory)
+            {
+                return super.tokenURI(tokenId);
+            }\n`
+
+            }else if (data.uups){
+                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";\n';
+                clss += ', ERC721URIStorageUpgradeable'
+                construct += '__ERC721URIStorage_init();';
+                methods += `function _burn(uint256 tokenId)
+                internal
+                override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
+            {
+                super._burn(tokenId);
+            }
+        
+            function tokenURI(uint256 tokenId)
+                public
+                view
+                override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
+                returns (string memory)
+            {
+                return super.tokenURI(tokenId);
+            }\n`
+            }else{
+                imports += 'import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";\n';
+                clss += ', ERC721URIStorage'
+                methods += `function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+                    super._burn(tokenId);
+                }
+            
+                function tokenURI(uint256 tokenId)
+                    public
+                    view
+                    override(ERC721, ERC721URIStorage)
+                    returns (string memory)
+                {
+                    return super.tokenURI(tokenId);
+                }\n`
+                
             }
         }
         
@@ -670,7 +1140,7 @@ pragma solidity ^0.8.2;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 ${imports}
 
-contract ${data.name} is ERC721 {
+contract ${data.name.replace(' ','')} is ERC721 ${clss} {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -682,26 +1152,102 @@ contract ${data.name} is ERC721 {
     }
 
     function _baseURI() internal pure override returns (string memory) {
-        return "gggggg";
+        return "${data.URI}";
     }
 
-    function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
-        _safeMint(to, tokenId);
+   
+
+    ${methods}
+
+   
+}`
+
+
+var roles_transparent = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.2;
+
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+
+${imports}
+
+contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable ${clss}{
+
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+
+    function initialize() initializer public {
+        __ERC721_init("${data.name}", "${data.symbol}");
+        ${construct}
+
+
+
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(PAUSER_ROLE, msg.sender);
+        _setupRole(MINTER_ROLE, msg.sender);
+    }
+
+    function _baseURI() internal pure override returns (string memory) {
+        return "${data.URI}";
     }
 
     ${methods}
 
-    // The following functions are overrides required by Solidity.
 
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, AccessControl)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
+}`
+
+var roles_uups = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.2;
+
+import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+
+${imports}
+
+contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable, AccessControlUpgradeable, UUPSUpgradeable  ${clss}{
+
+    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+    bytes32 public constant UPGRADER_ROLE = keccak256("UPGRADER_ROLE");
+
+
+    /// @custom:oz-upgrades-unsafe-allow constructor
+    constructor() initializer {}
+
+    function initialize() initializer public {
+        __ERC721_init("${data.name}", "${data.symbol}");
+        __AccessControl_init();
+        __UUPSUpgradeable_init();
+        ${construct}
+
+
+
+        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _setupRole(PAUSER_ROLE, msg.sender);
+        _setupRole(MINTER_ROLE, msg.sender);
+        _setupRole(UPGRADER_ROLE, msg.sender);
     }
-}
+
+    function _baseURI() internal pure override returns (string memory) {
+        return "${data.URI}";
+    }
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        onlyRole(UPGRADER_ROLE)
+        override
+    {}
+
+    ${methods}
+
+
+}`
+
 
 
     if (data.ownable){
@@ -714,11 +1260,11 @@ contract ${data.name} is ERC721 {
         }
     }else if(data.roles){
         if (data.transparent){
-            return ''
+            return roles_transparent;
         }else if(data.uups){
-            return '';
+            return roles_uups;
         }else{
-            return '';
+            return roles_code;
         }
     }
 
@@ -730,15 +1276,15 @@ var data = {
     name : "test convert",
     symbol : "tsnnt",
     URI : "http://test.com",
-    transparent : false,
-    uups: true,
+    transparent : true,
+    uups: false,
     mintable : true,
-    burnable : true,
+    burnable : false,
     pausable : true,
     storage : true,
-    enumerable : true,
-    ownable : true,
-    roles : false
+    enumerable : false,
+    ownable : false,
+    roles : true
 
 }
 
