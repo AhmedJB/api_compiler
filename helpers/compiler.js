@@ -1,30 +1,18 @@
-const fs = require('fs')
+const fs = require("fs");
 
 module.exports.test = () => {
-    console.log('test here');
-} 
+  console.log("test here");
+};
 
-
-
-
-module.exports.handleBody = (body) =>{
-    console.log(body);
-}
-
-
-
-
-
-
-
-
-
+module.exports.handleBody = (body) => {
+  console.log(body);
+};
 
 /* 
 
 
 var upgradable_code = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -45,7 +33,7 @@ contract ${data.name} is Initializable, ERC721Upgradeable {
 }` 
 
 var uups_upgradable = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -78,7 +66,7 @@ contract ${data.name} is Initializable, ERC721Upgradeable, OwnableUpgradeable, U
 
 var roles_code = `
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 ${imports}
@@ -119,7 +107,7 @@ contract ${data.name} is ERC721 {
 `
 
 var roles_transparent = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -135,7 +123,7 @@ contract MyToken is Initializable, ERC721Upgradeable {
 
 
 var roles_uups = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -175,96 +163,87 @@ contract MyToken is Initializable, ERC721Upgradeable, AccessControlUpgradeable, 
     }
 }` */
 
+module.exports.formatContract = function (data) {
+  var imports = ``;
 
+  var methods = ``;
 
+  var clss = ``;
 
-function formatContract(data){
-    var imports = ``
+  var construct = ``;
 
-var methods = ``
-
-
-var clss = ``
-
-var construct = ``
-   
-
-    if (data.mintable) {
-        if (data.ownable){
-            if (data.transparent){
-                imports += 'import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";\n'
-                clss  += ', OwnableUpgradeable';
-                construct += '__Ownable_init();\n'
-                if (!data.storage){
-                    methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
+  if (data.mintable) {
+    if (data.ownable) {
+      if (data.transparent) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";\n';
+        clss += ", OwnableUpgradeable";
+        construct += "__Ownable_init();\n";
+        if (!data.storage) {
+          methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
                         _safeMint(to, tokenId);
                     }\n`;
-                }else{
-                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+        } else {
+          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
                     public
                     onlyOwner
                 {
                     _safeMint(to, tokenId);
                     _setTokenURI(tokenId, uri);
-                }\n`
-                }
-                
-            }else if (data.uups){
-                if (!data.storage){
-                    methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
+                }\n`;
+        }
+      } else if (data.uups) {
+        if (!data.storage) {
+          methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
                         _safeMint(to, tokenId);
                     }\n`;
-                }else{
-                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+        } else {
+          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
                     public
                     onlyOwner
                 {
                     _safeMint(to, tokenId);
                     _setTokenURI(tokenId, uri);
-                }\n`
-                }
-
-    
-            }else{
-                imports += 'import "@openzeppelin/contracts/access/Ownable.sol";\n';
-                clss += ', Ownable'
-                if (!data.storage){
-                    methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
+                }\n`;
+        }
+      } else {
+        imports += 'import "@openzeppelin/contracts/access/Ownable.sol";\n';
+        clss += ", Ownable";
+        if (!data.storage) {
+          methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
                         _safeMint(to, tokenId);
                     }\n`;
-                }else{
-                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+        } else {
+          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
                     public
                     onlyOwner
                 {
                     _safeMint(to, tokenId);
                     _setTokenURI(tokenId, uri);
-                }\n`
-                }
-        
-    
-            }
-        }else if (data.roles){
-            if (data.transparent){
-                imports += 'import "@openzeppelin/contracts/access/AccessControl.sol";\n'
-                clss += ', AccessControlUpgradeable';
-                construct += '__AccessControl_init();\n';
-                if (!data.storage){
-                    methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+                }\n`;
+        }
+      }
+    } else if (data.roles) {
+      if (data.transparent) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";\n';
+        clss += ", AccessControlUpgradeable";
+        construct += "__AccessControl_init();\n";
+        if (!data.storage) {
+          methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
                         _safeMint(to, tokenId);
                     }\n`;
-                }else{
-                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+        } else {
+          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
                     public
                     onlyRole(MINTER_ROLE)
                 {
                     _safeMint(to, tokenId);
                     _setTokenURI(tokenId, uri);
-                }\n`
-                }
-                if (!(data.enumerable || data.pausable)){
-                    
-                    methods += `
+                }\n`;
+        }
+        if (!(data.enumerable || data.pausable)) {
+          methods += `
                 
                     // The following functions are overrides required by Solidity.
                 
@@ -275,26 +254,24 @@ var construct = ``
                         returns (bool)
                     {
                         return super.supportsInterface(interfaceId);
-                    }\n`
-                } 
-
-            }else if (data.uups){
-                if (!data.storage){
-                    methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+                    }\n`;
+        }
+      } else if (data.uups) {
+        if (!data.storage) {
+          methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
                         _safeMint(to, tokenId);
                     }\n`;
-                }else{
-                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+        } else {
+          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
                     public
                     onlyRole(MINTER_ROLE)
                 {
                     _safeMint(to, tokenId);
                     _setTokenURI(tokenId, uri);
-                }\n`
-                }
-                if (!(data.enumerable || data.pausable)){
-                    
-                    methods += `
+                }\n`;
+        }
+        if (!(data.enumerable || data.pausable)) {
+          methods += `
                 
                     // The following functions are overrides required by Solidity.
                 
@@ -305,29 +282,29 @@ var construct = ``
                         returns (bool)
                     {
                         return super.supportsInterface(interfaceId);
-                    }\n`
-                } 
+                    }\n`;
+        }
+      } else {
+        imports +=
+          'import "@openzeppelin/contracts/access/AccessControl.sol";\n';
+        clss += ", AccessControl";
 
-            }else{
-                imports += 'import "@openzeppelin/contracts/access/AccessControl.sol";\n'
-                clss += ', AccessControl';
-
-                if (!data.storage){
-                    methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+        if (!data.storage) {
+          methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
                         _safeMint(to, tokenId);
                     }\n`;
-                }else{
-                    methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+        } else {
+          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
                     public
                     onlyRole(MINTER_ROLE)
                 {
                     _safeMint(to, tokenId);
                     _setTokenURI(tokenId, uri);
-                }\n`
-                }
-                
-                if (!(data.enumerable || data.pausable)){
-                    methods += `
+                }\n`;
+        }
+
+        if (!(data.enumerable || data.pausable)) {
+          methods += `
                 
                     // The following functions are overrides required by Solidity.
                 
@@ -338,90 +315,76 @@ var construct = ``
                         returns (bool)
                     {
                         return super.supportsInterface(interfaceId);
-                    }\n`
-                } 
-                
-
-            }
+                    }\n`;
         }
-        
+      }
     }
-    
-    
-    
-    if (data.burnable) {
-        if (data.ownable){
-            
-            if (data.transparent){
-                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";\n'
-                clss  += ', ERC721BurnableUpgradeable';
-                construct += '__ERC721Burnable_init();\n'
-    
-            }else if (data.uups){
-                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";\n'
-                clss += ', ERC721BurnableUpgradeable';
-                construct+= '__ERC721Burnable_init();\n'
-    
-            }else{
-                clss += ', ERC721Burnable'
-        imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";\n`
-    
-            }
-        }else if (data.roles){
-            if (data.transparent){
-                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";\n';
-                clss += ', ERC721BurnableUpgradeable'
-                construct += '__ERC721Burnable_init();\n'
+  }
 
-            }else if (data.uups){
-
-                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";\n';
-                clss += ', ERC721BurnableUpgradeable'
-                construct += '__ERC721Burnable_init();\n'
-
-            }else{
-                imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";\n`;
-                clss += `, ERC721Burnable`
-                
-                
-            }
-        }
-        
+  if (data.burnable) {
+    if (data.ownable) {
+      if (data.transparent) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";\n';
+        clss += ", ERC721BurnableUpgradeable";
+        construct += "__ERC721Burnable_init();\n";
+      } else if (data.uups) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";\n';
+        clss += ", ERC721BurnableUpgradeable";
+        construct += "__ERC721Burnable_init();\n";
+      } else {
+        clss += ", ERC721Burnable";
+        imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";\n`;
+      }
+    } else if (data.roles) {
+      if (data.transparent) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";\n';
+        clss += ", ERC721BurnableUpgradeable";
+        construct += "__ERC721Burnable_init();\n";
+      } else if (data.uups) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721BurnableUpgradeable.sol";\n';
+        clss += ", ERC721BurnableUpgradeable";
+        construct += "__ERC721Burnable_init();\n";
+      } else {
+        imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Burnable.sol";\n`;
+        clss += `, ERC721Burnable`;
+      }
     }
-    
-    
-    if (data.pausable) {
-        if (data.ownable){
-            
-            if (data.transparent){
-                if (!data.mintable){
-                    imports += `
+  }
+
+  if (data.pausable) {
+    if (data.ownable) {
+      if (data.transparent) {
+        if (!data.mintable) {
+          imports += `
                     import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
                     import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
                     \n`;
-                    clss  += ', PausableUpgradeable, OwnableUpgradeable';
-                    construct += `
+          clss += ", PausableUpgradeable, OwnableUpgradeable";
+          construct += `
                     __Pausable_init();
                     __Ownable_init();
-                    `
-                }else{
-                    imports += 'import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";\n'
-                    clss  += ', PausableUpgradeable';
-                    construct += '__Pausable_init();\n'
+                    `;
+        } else {
+          imports +=
+            'import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";\n';
+          clss += ", PausableUpgradeable";
+          construct += "__Pausable_init();\n";
+        }
 
-                }
-
-                if (data.enumerable){
-                    methods  += `function pause() public onlyOwner {
+        if (data.enumerable) {
+          methods += `function pause() public onlyOwner {
                         _pause();
                     }
                 
                     function unpause() public onlyOwner {
                         _unpause();
-                    }\n`
-
-                }else{
-                    methods += `function pause() public onlyOwner {
+                    }\n`;
+        } else {
+          methods += `function pause() public onlyOwner {
                         _pause();
                     }
                 
@@ -435,30 +398,24 @@ var construct = ``
                         override
                     {
                         super._beforeTokenTransfer(from, to, tokenId);
-                    }\n`
+                    }\n`;
+        }
+      } else if (data.uups) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";\n';
+        clss += ", PausableUpgradeable";
+        construct += "__Pausable_init();\n";
 
-                }
-                
-                
-               
-
-    
-            }else if (data.uups){
-                imports += 'import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";\n'
-                clss += ', PausableUpgradeable'
-                construct += '__Pausable_init();\n'
-
-                if (data.enumerable){
-                    methods  += `function pause() public onlyOwner {
+        if (data.enumerable) {
+          methods += `function pause() public onlyOwner {
                         _pause();
                     }
                 
                     function unpause() public onlyOwner {
                         _unpause();
-                    }\n`
-
-                }else{
-                    methods += `function pause() public onlyOwner {
+                    }\n`;
+        } else {
+          methods += `function pause() public onlyOwner {
                         _pause();
                     }
                 
@@ -472,38 +429,30 @@ var construct = ``
                     override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
                 {
                     super._beforeTokenTransfer(from, to, tokenId);
-                }\n`
-
-                }
-    
-            }else{
-
-                if (!data.mintable){
-                    imports += `
+                }\n`;
+        }
+      } else {
+        if (!data.mintable) {
+          imports += `
                     import "@openzeppelin/contracts/access/Ownable.sol";
                     import "@openzeppelin/contracts/security/Pausable.sol";
                     `;
-                    clss  += ', Pausable, Ownable';
-                    
-                }else{
-                    imports += `import "@openzeppelin/contracts/security/Pausable.sol";\n`
-                    clss += ', Pausable'
-                    
+          clss += ", Pausable, Ownable";
+        } else {
+          imports += `import "@openzeppelin/contracts/security/Pausable.sol";\n`;
+          clss += ", Pausable";
+        }
 
-                }
-
-
-                
-            if (data.enumerable){
-                methods += `function pause() public onlyOwner {
+        if (data.enumerable) {
+          methods += `function pause() public onlyOwner {
                     _pause();
                 }
             
                 function unpause() public onlyOwner {
                     _unpause();
-                }\n`
-            }else{
-                methods += `function pause() public onlyOwner {
+                }\n`;
+        } else {
+          methods += `function pause() public onlyOwner {
                     _pause();
                 }
             
@@ -517,29 +466,13 @@ var construct = ``
                     override
                 {
                     super._beforeTokenTransfer(from, to, tokenId);
-                }\n`
-            }
-        methods += `function pause() public onlyOwner {
-            _pause();
+                }\n`;
         }
-    
-        function unpause() public onlyOwner {
-            _unpause();
-        }
-    
-        function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-            internal
-            whenNotPaused
-            override
-        {
-            super._beforeTokenTransfer(from, to, tokenId);
-        }\n`
         
-    
-            }
-        }else if (data.roles){
-            if (data.transparent){
-                methods += `function pause() public onlyRole(PAUSER_ROLE) {
+      }
+    } else if (data.roles) {
+      if (data.transparent) {
+        methods += `function pause() public onlyRole(PAUSER_ROLE) {
                     _pause();
                 }
             
@@ -547,23 +480,21 @@ var construct = ``
                     _unpause();
                 }
                 \n
-                `
-                if (data.mintable){
-                    imports += 'import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";\n'
-                    clss +=  ', PausableUpgradeable';
-                    construct += '__Pausable_init();\n'
-
-                    
-                    
-
-                }else{
-                    construct += `__Pausable_init();
-                    __AccessControl_init();\n`
-                    imports += `import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
-                    import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol"\n`;
-                    clss += ', PausableUpgradeable, AccessControlUpgradeable';
-                    if (!data.enumerable){
-                        methods += `
+                `;
+        if (data.mintable) {
+          imports +=
+            'import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";\n';
+          clss += ", PausableUpgradeable";
+          construct += "__Pausable_init();\n";
+        } else {
+          construct += `__Pausable_init();
+                    __AccessControl_init();\n`;
+          imports += `import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";
+                    import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";\n`;
+          clss += ", PausableUpgradeable, AccessControlUpgradeable";
+        }
+        if (!data.enumerable) {
+          methods += `
 
                         function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                         internal
@@ -583,17 +514,16 @@ var construct = ``
                     {
                         return super.supportsInterface(interfaceId);
                     }
-                }
-        \n`}}
+                
+        \n`;
+        }
+      } else if (data.uups) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";\n';
+        clss += ", PausableUpgradeable";
+        construct += "__Pausable_init();\n";
 
-                    
-
-            }else if (data.uups){
-                imports += 'import "@openzeppelin/contracts-upgradeable/security/PausableUpgradeable.sol";\n'
-                    clss +=  ', PausableUpgradeable';
-                    construct += '__Pausable_init();\n'
-
-                methods += `function pause() public onlyRole(PAUSER_ROLE) {
+        methods += `function pause() public onlyRole(PAUSER_ROLE) {
                     _pause();
                 }
             
@@ -601,9 +531,9 @@ var construct = ``
                     _unpause();
                 }
                 \n
-                `
-                if (!data.enumerable){
-                    methods += `
+                `;
+        if (!data.enumerable) {
+          methods += `
 
                     function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
@@ -623,11 +553,11 @@ var construct = ``
                 {
                     return super.supportsInterface(interfaceId);
                 }
-            }
-    \n`}
-
-            }else{
-                methods += `function pause() public onlyRole(PAUSER_ROLE) {
+            
+    \n`;
+        }
+      } else {
+        methods += `function pause() public onlyRole(PAUSER_ROLE) {
                     _pause();
                 }
             
@@ -635,55 +565,49 @@ var construct = ``
                     _unpause();
                 }
                 \n
-                `
-                if (data.mintable){
-                    imports += 'import "@openzeppelin/contracts/security/Pausable.sol";'
-                    clss +=  ', Pausable';
-                    
-                    
-
-                }else{
-                    imports += `import "@openzeppelin/contracts/security/Pausable.sol";
+                `;
+        if (data.mintable) {
+          imports += 'import "@openzeppelin/contracts/security/Pausable.sol";';
+          clss += ", Pausable";
+        } else {
+          imports += `import "@openzeppelin/contracts/security/Pausable.sol";
                         import "@openzeppelin/contracts/access/AccessControl.sol";\n`;
-                    clss += ', Pausable, AccessControl';
-                    if (!data.enumerable){
-                        methods += `
-
-                        function _beforeTokenTransfer(address from, address to, uint256 tokenId)
-    internal
-    whenNotPaused
-    override
-{
-    super._beforeTokenTransfer(from, to, tokenId);
-}
-        function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(ERC721, AccessControl)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
-    }
-        \n`
-
-                    }
-                    
-
-                }
-            }
+          clss += ", Pausable, AccessControl";
         }
-        
+
+        if (!data.enumerable) {
+          methods += `
+
+                    function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+internal
+whenNotPaused
+override
+{
+super._beforeTokenTransfer(from, to, tokenId);
+}
+    function supportsInterface(bytes4 interfaceId)
+    public
+    view
+    override(ERC721, AccessControl)
+    returns (bool)
+{
+    return super.supportsInterface(interfaceId);
+}
+    \n`;
+        }
+      }
     }
-    
-    
-    if (data.enumerable) {
-        if (data.ownable){
-            if (data.transparent){
-                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";\n'
-                clss += ', ERC721EnumerableUpgradeable'
-                construct += '__ERC721Enumerable_init();\n'
-                if (data.pausable){
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+  }
+
+  if (data.enumerable) {
+    if (data.ownable) {
+      if (data.transparent) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";\n';
+        clss += ", ERC721EnumerableUpgradeable";
+        construct += "__ERC721Enumerable_init();\n";
+        if (data.pausable) {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     whenNotPaused
                     override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
@@ -700,10 +624,9 @@ var construct = ``
                     returns (bool)
                 {
                     return super.supportsInterface(interfaceId);
-                }\n`
-
-                }else{
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+                }\n`;
+        } else {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
                 {
@@ -718,15 +641,14 @@ var construct = ``
                 {
                     return super.supportsInterface(interfaceId);
                 }`;
-
-                }
-    
-            }else if (data.uups){
-                imports +=  'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";\n'
-                clss += ', ERC721EnumerableUpgradeable';
-                construct += '__ERC721Enumerable_init();\n';
-                if (data.pausable){
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+        }
+      } else if (data.uups) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";\n';
+        clss += ", ERC721EnumerableUpgradeable";
+        construct += "__ERC721Enumerable_init();\n";
+        if (data.pausable) {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     whenNotPaused
                     override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
@@ -741,9 +663,9 @@ var construct = ``
         returns (bool)
     {
         return super.supportsInterface(interfaceId);
-    }\n`
-                }else{
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+    }\n`;
+        } else {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
                 {
@@ -758,12 +680,12 @@ var construct = ``
                 {
                     return super.supportsInterface(interfaceId);
                 }\n`;
-                }
-            }else{
-                clss += ', ERC721Enumerable'
-                    imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";\n`
-                if (data.pausable){
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+        }
+      } else {
+        clss += ", ERC721Enumerable";
+        imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";\n`;
+        if (data.pausable) {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     whenNotPaused
                     override(ERC721, ERC721Enumerable)
@@ -780,9 +702,9 @@ var construct = ``
                     returns (bool)
                 {
                     return super.supportsInterface(interfaceId);
-                }\n`
-                }else{
-                    methods +=  `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+                }\n`;
+        } else {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     override(ERC721, ERC721Enumerable)
                 {
@@ -796,19 +718,17 @@ var construct = ``
                     returns (bool)
                 {
                     return super.supportsInterface(interfaceId);
-                }`
-                }
-    
-            }
-        }else if (data.roles){
-            if (data.transparent){
+                }`;
+        }
+      }
+    } else if (data.roles) {
+      if (data.transparent) {
+        clss += `, ERC721EnumerableUpgradeable`;
+        imports += `import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";\n`;
+        construct += "__ERC721Enumerable_init();\n";
 
-                clss += `, ERC721EnumerableUpgradeable`;
-                imports += `import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";\n`
-                construct += '__ERC721Enumerable_init();\n';
-
-                if (data.pausable || data.mintable){
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+        if (data.pausable || data.mintable) {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     whenNotPaused
                     override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
@@ -826,9 +746,8 @@ var construct = ``
                 {
                     return super.supportsInterface(interfaceId);
                 }\n`;
-                    
-                }else{
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+        } else {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
                 {
@@ -843,15 +762,14 @@ var construct = ``
                 {
                     return super.supportsInterface(interfaceId);
                 }\n`;
-                }
+        }
+      } else if (data.uups) {
+        clss += `, ERC721EnumerableUpgradeable`;
+        imports += `import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";\n`;
+        construct += "__ERC721Enumerable_init();\n";
 
-            }else if (data.uups){
-                clss += `, ERC721EnumerableUpgradeable`;
-                imports += `import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721EnumerableUpgradeable.sol";\n`
-                construct += '__ERC721Enumerable_init();\n';
-
-                if (data.pausable || data.mintable){
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+        if (data.pausable || data.mintable) {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     whenNotPaused
                     override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
@@ -869,9 +787,8 @@ var construct = ``
                 {
                     return super.supportsInterface(interfaceId);
                 }\n`;
-                    
-                }else{
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+        } else {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     override(ERC721Upgradeable, ERC721EnumerableUpgradeable)
                 {
@@ -886,14 +803,13 @@ var construct = ``
                 {
                     return super.supportsInterface(interfaceId);
                 }\n`;
-                }
+        }
+      } else {
+        clss += `, ERC721Enumerable`;
+        imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";\n`;
 
-            }else{
-                clss += `, ERC721Enumerable`;
-                imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";\n`
-
-                if (data.pausable || data.mintable){
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+        if (data.pausable || data.mintable) {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     whenNotPaused
                     override(ERC721, ERC721Enumerable)
@@ -911,9 +827,8 @@ var construct = ``
                 {
                     return super.supportsInterface(interfaceId);
                 }\n`;
-                    
-                }else{
-                    methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
+        } else {
+          methods += `function _beforeTokenTransfer(address from, address to, uint256 tokenId)
                     internal
                     override(ERC721, ERC721Enumerable)
                 {
@@ -928,19 +843,18 @@ var construct = ``
                 {
                     return super.supportsInterface(interfaceId);
                 }\n`;
-                }
-                
-            }
         }
-        
+      }
     }
-    if (data.storage) {
-        if (data.ownable){
-            if (data.transparent){
-                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";\n';
-                clss += ', ERC721URIStorageUpgradeable';
-                construct += '__ERC721URIStorage_init();\n'
-                methods += `function _burn(uint256 tokenId)
+  }
+  if (data.storage) {
+    if (data.ownable) {
+      if (data.transparent) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";\n';
+        clss += ", ERC721URIStorageUpgradeable";
+        construct += "__ERC721URIStorage_init();\n";
+        methods += `function _burn(uint256 tokenId)
                 internal
                 override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
             {
@@ -954,13 +868,12 @@ var construct = ``
                 returns (string memory)
             {
                 return super.tokenURI(tokenId);
-            }\n`
-    
-            }else if (data.uups){
-                imports  += `import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";`;
-                clss += `, ERC721URIStorageUpgradeable`;
-                construct += '__ERC721URIStorage_init();\n'
-                methods +=  `function _burn(uint256 tokenId)
+            }\n`;
+      } else if (data.uups) {
+        imports += `import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";`;
+        clss += `, ERC721URIStorageUpgradeable`;
+        construct += "__ERC721URIStorage_init();\n";
+        methods += `function _burn(uint256 tokenId)
                 internal
                 override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
             {
@@ -975,8 +888,8 @@ var construct = ``
             {
                 return super.tokenURI(tokenId);
             }`;
-            }else{
-                clss += ', ERC721URIStorage'
+      } else {
+        clss += ", ERC721URIStorage";
         methods += `function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
             super._burn(tokenId);
         }
@@ -988,16 +901,16 @@ var construct = ``
             returns (string memory)
         {
             return super.tokenURI(tokenId);
-        }\n`
-        imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";\n`
-    
-            }
-        }else if (data.roles){
-            if (data.transparent){
-                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";\n';
-                clss += ', ERC721URIStorageUpgradeable'
-                construct += '__ERC721URIStorage_init();';
-                methods += `function _burn(uint256 tokenId)
+        }\n`;
+        imports += `import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";\n`;
+      }
+    } else if (data.roles) {
+      if (data.transparent) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";\n';
+        clss += ", ERC721URIStorageUpgradeable";
+        construct += "__ERC721URIStorage_init();";
+        methods += `function _burn(uint256 tokenId)
                 internal
                 override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
             {
@@ -1011,13 +924,13 @@ var construct = ``
                 returns (string memory)
             {
                 return super.tokenURI(tokenId);
-            }\n`
-
-            }else if (data.uups){
-                imports += 'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";\n';
-                clss += ', ERC721URIStorageUpgradeable'
-                construct += '__ERC721URIStorage_init();';
-                methods += `function _burn(uint256 tokenId)
+            }\n`;
+      } else if (data.uups) {
+        imports +=
+          'import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";\n';
+        clss += ", ERC721URIStorageUpgradeable";
+        construct += "__ERC721URIStorage_init();";
+        methods += `function _burn(uint256 tokenId)
                 internal
                 override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
             {
@@ -1031,11 +944,12 @@ var construct = ``
                 returns (string memory)
             {
                 return super.tokenURI(tokenId);
-            }\n`
-            }else{
-                imports += 'import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";\n';
-                clss += ', ERC721URIStorage'
-                methods += `function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
+            }\n`;
+      } else {
+        imports +=
+          'import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";\n';
+        clss += ", ERC721URIStorage";
+        methods += `function _burn(uint256 tokenId) internal override(ERC721, ERC721URIStorage) {
                     super._burn(tokenId);
                 }
             
@@ -1046,22 +960,21 @@ var construct = ``
                     returns (string memory)
                 {
                     return super.tokenURI(tokenId);
-                }\n`
-                
-            }
-        }
-        
+                }\n`;
+      }
     }
+  }
 
-    var code = `
-    pragma solidity ^0.8.2;
+  var code = `
+  // SPDX-License-Identifier: MIT
+    pragma solidity ^0.8.10;
     
     
     import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
     ${imports}
     
     
-    contract ${data.name.replace(' ','')} is ERC721 ${clss} {
+    contract ${data.name.replace(" ", "")} is ERC721 ${clss} {
         constructor() ERC721("${data.name}", "${data.symbol}") {}
     
     
@@ -1074,16 +987,19 @@ var construct = ``
     
     
     
-    }`
+    }`;
 
-    var upgradable_code = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+  var upgradable_code = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 ${imports}
 
-contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable ${clss} {
+contract ${data.name.replace(
+    " ",
+    ""
+  )} is Initializable, ERC721Upgradeable ${clss} {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
 
@@ -1096,10 +1012,10 @@ contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable ${clss
         return "${data.URI}";
     }
     ${methods}
-}` 
+}`;
 
-var uups_upgradable = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+  var uups_upgradable = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -1107,7 +1023,10 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 ${imports}
 
-contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable, OwnableUpgradeable, UUPSUpgradeable  ${clss} {
+contract ${data.name.replace(
+    " ",
+    ""
+  )} is Initializable, ERC721Upgradeable, OwnableUpgradeable, UUPSUpgradeable  ${clss} {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() initializer {}
 
@@ -1129,18 +1048,18 @@ contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable, Ownab
     {}
 
     ${methods}
-}`
+}`;
 
-// roles
+  // roles
 
-var roles_code = `
+  var roles_code = `
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 ${imports}
 
-contract ${data.name.replace(' ','')} is ERC721 ${clss} {
+contract ${data.name.replace(" ", "")} is ERC721 ${clss} {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -1160,18 +1079,20 @@ contract ${data.name.replace(' ','')} is ERC721 ${clss} {
     ${methods}
 
    
-}`
+}`;
 
-
-var roles_transparent = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+  var roles_transparent = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 
 ${imports}
 
-contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable ${clss}{
+contract ${data.name.replace(
+    " ",
+    ""
+  )} is Initializable, ERC721Upgradeable ${clss}{
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -1198,10 +1119,10 @@ contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable ${clss
     ${methods}
 
 
-}`
+}`;
 
-var roles_uups = `// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.2;
+  var roles_uups = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.10;
 
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
@@ -1210,7 +1131,10 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 ${imports}
 
-contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable, AccessControlUpgradeable, UUPSUpgradeable  ${clss}{
+contract ${data.name.replace(
+    " ",
+    ""
+  )} is Initializable, ERC721Upgradeable, AccessControlUpgradeable, UUPSUpgradeable  ${clss}{
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -1246,57 +1170,38 @@ contract ${data.name.replace(' ','')} is Initializable, ERC721Upgradeable, Acces
     ${methods}
 
 
-}`
+}`;
 
-
-
-    if (data.ownable){
-        if (data.transparent){
-            return upgradable_code;
-        }else if (data.uups){
-            return uups_upgradable
-        }else{
-            return code;
-        }
-    }else if(data.roles){
-        if (data.transparent){
-            return roles_transparent;
-        }else if(data.uups){
-            return roles_uups;
-        }else{
-            return roles_code;
-        }
+  if (data.ownable) {
+    if (data.transparent) {
+      return upgradable_code;
+    } else if (data.uups) {
+      return uups_upgradable;
+    } else {
+      return code;
     }
-
-}
-
-
+  } else if (data.roles) {
+    if (data.transparent) {
+      return roles_transparent;
+    } else if (data.uups) {
+      return roles_uups;
+    } else {
+      return roles_code;
+    }
+  }
+};
 
 var data = {
-    name : "test convert",
-    symbol : "tsnnt",
-    URI : "http://test.com",
-    transparent : true,
-    uups: false,
-    mintable : true,
-    burnable : false,
-    pausable : true,
-    storage : true,
-    enumerable : false,
-    ownable : false,
-    roles : true
-
-}
-
-
-fs.writeFile('res.sol',formatContract(data) , function (err) {
-    if (err) throw err;
-    console.log('Saved!');
-  });
-
-
-
-
-
-
-
+  name: "test convert",
+  symbol: "tsnnt",
+  URI: "http://test.com",
+  transparent: true,
+  uups: false,
+  mintable: true,
+  burnable: false,
+  pausable: true,
+  storage: true,
+  enumerable: false,
+  ownable: false,
+  roles: true,
+};

@@ -9,6 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1"
+    "@openzeppelin/contracts-upgradeable": "^4.4.0",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "solc": "^0.8.10"
   }
 }

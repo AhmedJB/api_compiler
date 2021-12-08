@@ -79,21 +79,7 @@ contract TestT is ERC721, ERC721Enumerable, ERC721URIStorage, Pausable, AccessCo
     }
 }`;
 
-var input = {
-    language: 'Solidity',
-    sources: {
-      'NFT.sol': {
-        content: src
-      }
-    },
-    settings: {
-      outputSelection: {
-        '*': {
-          '*': ['*']
-        }
-      }
-    }
-  };
+
 
 
 var obj = {}
@@ -115,22 +101,51 @@ function findImports(p1) {
    
   }
 
-var output = solc.compile(JSON.stringify(input), { import: findImports });
-console.log(output);
+
+module.exports.compile_contract = function (src,name){
+  var input = {
+    language: 'Solidity',
+    sources: {
+      'NFT.sol': {
+        content: src
+      }
+    },
+    settings: {
+      outputSelection: {
+        '*': {
+          '*': ['*']
+        }
+      }
+    }
+  };
+  var output = solc.compile(JSON.stringify(input), { import: findImports });
+/* console.log(output);
 fs.writeFile('source.json', JSON.stringify(JSON.parse(output).contracts) , function (err) {
     if (err) throw err;
     console.log('Saved!');
-  });
+  }); */
 
 
 parsed = JSON.parse(output);
 console.log('after')
-console.log(Object.keys(parsed.contracts['NFT.sol']['TestT']))
-let bytecode = parsed.contracts['NFT.sol']['TestT'].evm.bytecode;
-let abi = parsed.contracts['NFT.sol']['TestT'].abi;
+console.log(parsed)
+console.log(Object.keys(parsed))
+if(parsed.errors){
+  return false;
+}
+let bytecode = parsed.contracts['NFT.sol'][name].evm.bytecode.object;
+let abi = parsed.contracts['NFT.sol'][name].abi;
 
 
-fs.writeFile('data.json',JSON.stringify(obj) , function (err) {
+/* fs.writeFile('data.json',JSON.stringify(obj) , function (err) {
     if (err) throw err;
     console.log('Saved!');
-  });
+  }); */
+return {
+  code : bytecode,
+  abi : abi
+}
+}
+
+
+
