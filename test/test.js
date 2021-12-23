@@ -105,12 +105,17 @@ function findImports(p1) {
 module.exports.compile_contract = function (src,name){
   var input = {
     language: 'Solidity',
+    
     sources: {
       'NFT.sol': {
         content: src
       }
     },
     settings: {
+      optimizer: {
+        enabled: true,
+        runs: 600,
+      },
       outputSelection: {
         '*': {
           '*': ['*']
@@ -127,7 +132,7 @@ fs.writeFile('source.json', JSON.stringify(JSON.parse(output).contracts) , funct
 
 
 parsed = JSON.parse(output);
-console.log('after')
+//console.log('after')
 console.log(parsed)
 console.log(Object.keys(parsed))
 if(parsed.errors){

@@ -305,12 +305,16 @@ module.exports.formatContract = function (data) {
         
       }
     } else if (data.roles) {
+      
       if (data.transparent) {
+        
         imports +=
           'import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";\n';
         clss += ", AccessControlUpgradeable";
         construct += "__AccessControl_init();\n";
-        if (data.icrement){
+        
+        if (data.increment){
+          
           imports += 'import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";\n'
           libs += `using CountersUpgradeable for CountersUpgradeable.Counter;
             CountersUpgradeable.Counter private _tokenIdCounter;`;

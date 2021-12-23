@@ -20,7 +20,7 @@ app.listen(8080, () => {
 app.post('',(req,resp) => {
     console.log(req.body);
     let contract = comp.formatContract(req.body);
-   /*  fs.writeFile('res.sol',contract , function (err) {
+   /* fs.writeFile('res.sol',contract , function (err) {
       if (err) throw err;
       console.log('Saved!');
     }); */
