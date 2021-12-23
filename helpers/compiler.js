@@ -164,6 +164,9 @@ contract MyToken is Initializable, ERC721Upgradeable, AccessControlUpgradeable, 
 }` */
 
 module.exports.formatContract = function (data) {
+  if (data.increment){
+    data.mintable = true;
+  }
   var imports = ``;
 
   var methods = ``;
@@ -171,6 +174,7 @@ module.exports.formatContract = function (data) {
   var clss = ``;
 
   var construct = ``;
+  var  libs = ``;
 
   if (data.mintable) {
     if (data.ownable) {
@@ -179,49 +183,126 @@ module.exports.formatContract = function (data) {
           'import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";\n';
         clss += ", OwnableUpgradeable";
         construct += "__Ownable_init();\n";
-        if (!data.storage) {
-          methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
-                        _safeMint(to, tokenId);
-                    }\n`;
-        } else {
-          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
-                    public
-                    onlyOwner
-                {
-                    _safeMint(to, tokenId);
-                    _setTokenURI(tokenId, uri);
-                }\n`;
+        if (data.increment){
+          imports += 'import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";\n'
+          libs += `using CountersUpgradeable for CountersUpgradeable.Counter;
+
+          CountersUpgradeable.Counter private _tokenIdCounter;`
+          if (!data.storage) {
+            methods += `function safeMint(address to) public onlyOwner {
+              uint256 tokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, string memory uri)
+                      public
+                      onlyOwner
+                  {
+                    uint256 tokenId = _tokenIdCounter.current();
+                    _tokenIdCounter.increment();
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
+
+        }else{
+          if (!data.storage) {
+            methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                      public
+                      onlyOwner
+                  {
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
         }
+        
       } else if (data.uups) {
-        if (!data.storage) {
-          methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
-                        _safeMint(to, tokenId);
-                    }\n`;
-        } else {
-          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
-                    public
-                    onlyOwner
-                {
-                    _safeMint(to, tokenId);
-                    _setTokenURI(tokenId, uri);
-                }\n`;
+        if (data.increment){
+          imports += 'import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";\n'
+          libs += `using CountersUpgradeable for CountersUpgradeable.Counter;
+
+           CountersUpgradeable.Counter private _tokenIdCounter;`;
+          if (!data.storage) {
+            methods += `function safeMint(address to) public onlyOwner {
+              uint256 tokenId = _tokenIdCounter.current();
+            _tokenIdCounter.increment();
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, string memory uri)
+                      public
+                      onlyOwner
+                  {
+                    uint256 tokenId = _tokenIdCounter.current();
+                    _tokenIdCounter.increment();
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
+        }else{
+          if (!data.storage) {
+            methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                      public
+                      onlyOwner
+                  {
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
         }
+        
       } else {
         imports += 'import "@openzeppelin/contracts/access/Ownable.sol";\n';
         clss += ", Ownable";
-        if (!data.storage) {
-          methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
-                        _safeMint(to, tokenId);
-                    }\n`;
-        } else {
-          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
-                    public
-                    onlyOwner
-                {
-                    _safeMint(to, tokenId);
-                    _setTokenURI(tokenId, uri);
-                }\n`;
+        if (data.increment){
+          imports += 'import "@openzeppelin/contracts/utils/Counters.sol";\n'
+          libs += `using Counters for Counters.Counter;
+
+              Counters.Counter private _tokenIdCounter;`
+              if (!data.storage) {
+                methods += `function safeMint(address to) public onlyOwner {
+                              _safeMint(to, tokenId);
+                              uint256 tokenId = _tokenIdCounter.current();
+                            _tokenIdCounter.increment();
+                          }\n`;
+              } else {
+                methods += `function safeMint(address to, string memory uri)
+                          public
+                          onlyOwner
+                      {
+                        uint256 tokenId = _tokenIdCounter.current();
+                        _tokenIdCounter.increment();
+                          _safeMint(to, tokenId);
+                          _setTokenURI(tokenId, uri);
+                      }\n`;
+              }
+
+        }else{
+          if (!data.storage) {
+            methods += `function safeMint(address to, uint256 tokenId) public onlyOwner {
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                      public
+                      onlyOwner
+                  {
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
         }
+        
       }
     } else if (data.roles) {
       if (data.transparent) {
@@ -229,19 +310,43 @@ module.exports.formatContract = function (data) {
           'import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";\n';
         clss += ", AccessControlUpgradeable";
         construct += "__AccessControl_init();\n";
-        if (!data.storage) {
-          methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
-                        _safeMint(to, tokenId);
-                    }\n`;
-        } else {
-          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
-                    public
-                    onlyRole(MINTER_ROLE)
-                {
-                    _safeMint(to, tokenId);
-                    _setTokenURI(tokenId, uri);
-                }\n`;
+        if (data.icrement){
+          imports += 'import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";\n'
+          libs += `using CountersUpgradeable for CountersUpgradeable.Counter;
+            CountersUpgradeable.Counter private _tokenIdCounter;`;
+          if (!data.storage) {
+            methods += `function safeMint(address to) public onlyRole(MINTER_ROLE) {
+                        uint256 tokenId = _tokenIdCounter.current();
+                        _tokenIdCounter.increment();
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, string memory uri)
+                      public
+                      onlyRole(MINTER_ROLE)
+                  {
+                    uint256 tokenId = _tokenIdCounter.current();
+                    _tokenIdCounter.increment();
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
+        }else{
+          if (!data.storage) {
+            methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                      public
+                      onlyRole(MINTER_ROLE)
+                  {
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
         }
+        
         if (!(data.enumerable || data.pausable)) {
           methods += `
                 
@@ -257,19 +362,44 @@ module.exports.formatContract = function (data) {
                     }\n`;
         }
       } else if (data.uups) {
-        if (!data.storage) {
-          methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
-                        _safeMint(to, tokenId);
-                    }\n`;
-        } else {
-          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
-                    public
-                    onlyRole(MINTER_ROLE)
-                {
-                    _safeMint(to, tokenId);
-                    _setTokenURI(tokenId, uri);
-                }\n`;
+        if (data.increment){
+          imports += 'import "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";\n'
+          libs += `using CountersUpgradeable for CountersUpgradeable.Counter;
+            CountersUpgradeable.Counter private _tokenIdCounter;`;
+          if (!data.storage) {
+            methods += `function safeMint(address to) public onlyRole(MINTER_ROLE) {
+                        uint256 tokenId = _tokenIdCounter.current();
+                        _tokenIdCounter.increment();
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, string memory uri)
+                      public
+                      onlyRole(MINTER_ROLE)
+                  {
+                    uint256 tokenId = _tokenIdCounter.current();
+                    _tokenIdCounter.increment();
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
+
+        }else{
+          if (!data.storage) {
+            methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                      public
+                      onlyRole(MINTER_ROLE)
+                  {
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
         }
+        
         if (!(data.enumerable || data.pausable)) {
           methods += `
                 
@@ -289,19 +419,48 @@ module.exports.formatContract = function (data) {
           'import "@openzeppelin/contracts/access/AccessControl.sol";\n';
         clss += ", AccessControl";
 
-        if (!data.storage) {
-          methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
-                        _safeMint(to, tokenId);
-                    }\n`;
-        } else {
-          methods += `function safeMint(address to, uint256 tokenId, string memory uri)
-                    public
-                    onlyRole(MINTER_ROLE)
-                {
-                    _safeMint(to, tokenId);
-                    _setTokenURI(tokenId, uri);
-                }\n`;
+
+        if  (data.increment){
+          imports += 'import "@openzeppelin/contracts/utils/Counters.sol";\n'
+          libs += `using Counters for Counters.Counter;
+          Counters.Counter private _tokenIdCounter;
+          `
+
+          if (!data.storage) {
+            methods += `function safeMint(address to) public onlyRole(MINTER_ROLE) {
+              uint256 tokenId = _tokenIdCounter.current();
+        _tokenIdCounter.increment();
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, string memory uri)
+                      public
+                      onlyRole(MINTER_ROLE)
+                  {
+                    uint256 tokenId = _tokenIdCounter.current();
+                    _tokenIdCounter.increment();
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
+
+        }else{
+          if (!data.storage) {
+            methods += `function safeMint(address to, uint256 tokenId) public onlyRole(MINTER_ROLE) {
+                          _safeMint(to, tokenId);
+                      }\n`;
+          } else {
+            methods += `function safeMint(address to, uint256 tokenId, string memory uri)
+                      public
+                      onlyRole(MINTER_ROLE)
+                  {
+                      _safeMint(to, tokenId);
+                      _setTokenURI(tokenId, uri);
+                  }\n`;
+          }
         }
+
+        
 
         if (!(data.enumerable || data.pausable)) {
           methods += `
@@ -975,6 +1134,7 @@ super._beforeTokenTransfer(from, to, tokenId);
     
     
     contract ${data.name.replace(" ", "")} is ERC721 ${clss} {
+      ${libs}
         constructor() ERC721("${data.name}", "${data.symbol}") {}
     
     
@@ -1001,6 +1161,7 @@ contract ${data.name.replace(
     ""
   )} is Initializable, ERC721Upgradeable ${clss} {
     /// @custom:oz-upgrades-unsafe-allow constructor
+    ${libs}
     constructor() initializer {}
 
     function initialize() initializer public {
@@ -1027,7 +1188,9 @@ contract ${data.name.replace(
     " ",
     ""
   )} is Initializable, ERC721Upgradeable, OwnableUpgradeable, UUPSUpgradeable  ${clss} {
+    ${libs}
     /// @custom:oz-upgrades-unsafe-allow constructor
+
     constructor() initializer {}
 
     function initialize() initializer public {
@@ -1060,6 +1223,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 ${imports}
 
 contract ${data.name.replace(" ", "")} is ERC721 ${clss} {
+  ${libs}
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
@@ -1093,6 +1257,7 @@ contract ${data.name.replace(
     " ",
     ""
   )} is Initializable, ERC721Upgradeable ${clss}{
+    ${libs}
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -1135,6 +1300,7 @@ contract ${data.name.replace(
     " ",
     ""
   )} is Initializable, ERC721Upgradeable, AccessControlUpgradeable, UUPSUpgradeable  ${clss}{
+    ${libs}
 
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -1199,6 +1365,7 @@ var data = {
   uups: false,
   mintable: true,
   burnable: false,
+  increment :  false,
   pausable: true,
   storage: true,
   enumerable: false,
