@@ -1,9 +1,17 @@
+
 const express = require('express')
 const app = express()
 const comp = require('./helpers/compiler');
 const compiler = require('./test/test.js');
 var cors = require('cors')
 const fs = require('fs');
+const https = require('https');
+const http = require('http');
+
+var options = {
+        key : fs.readFileSync('../keys/client-key.pem'),
+        cert : fs.readFileSync('../keys/client-cert.pem')
+}
 
 
 app.use(express.json());       // to support JSON-encoded bodies
@@ -53,4 +61,8 @@ app.get('',(req,resp) => {
 
 
 
+// Create an HTTP service.
+http.createServer(app).listen(8008);
+// // Create an HTTPS service identical to the HTTP service.
+https.createServer(options, app).listen(443);
 
